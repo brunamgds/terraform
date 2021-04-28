@@ -123,9 +123,24 @@ resource "azurerm_virtual_machine" "vm" {
     disable_password_authentication = false
   } 
 }
-resource "null_resource" "apt-mysql" {
+
+resource "null_resource" "upload_db" {
+    provisioner "file" {
+        connection {
+            type = "ssh"
+            user = "testadmin"
+            password = "Password1234!"
+            host = azurerm_public_ip.public.ip_address
+        }
+        source = "mysql"
+        destination = "/home/azureuser"
+    }
+
+}
+
+resource "null_resource" "deploy_db" {
   triggers = {
-    order = azurerm_virtual_machine.vm.id
+        order = null_resource.upload_db.id
   }
 
   provisioner "remote-exec" {
